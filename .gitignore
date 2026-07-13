@@ -30,6 +30,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# oh-my-claudecode session state
+.omc/
+
 # local env files
 .env*.local
 
