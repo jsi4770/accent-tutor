@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
@@ -6,7 +7,9 @@ import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { AppText } from '@/components/text';
 import { Radius, Spacing } from '@/constants/theme';
+import { api } from '@/api/client';
 import { useTheme } from '@/hooks/use-theme';
+import { useSession } from '@/store/session';
 
 const socials = [
   { id: 'google', label: 'Google 로그인', emoji: '🟦' },
@@ -17,7 +20,28 @@ const socials = [
 export default function LoginScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const { signIn } = useSession();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
   const enter = () => router.replace('/(tabs)/home');
+
+  const withEmail = async () => {
+    setSubmitting(true);
+    const { token } = await api.login(email, password);
+    signIn(token);
+    enter();
+  };
+
+  const withSocial = (provider: string) => async () => {
+    setSubmitting(true);
+    const { token } = await api.login(`${provider}@example.com`, 'social-oauth-placeholder');
+    signIn(token);
+    enter();
+  };
+
+  const canSubmit = email.includes('@') && password.length > 0;
 
   return (
     <Screen>
@@ -26,18 +50,23 @@ export default function LoginScreen() {
       <Card>
         <AppText variant="label">자체 아이디 로그인</AppText>
         <TextInput
-          placeholder="아이디"
+          placeholder="이메일"
           placeholderTextColor={theme.muted}
+          value={email}
+          onChangeText={setEmail}
           style={[styles.input, { borderColor: theme.border, color: theme.text }]}
           autoCapitalize="none"
+          keyboardType="email-address"
         />
         <TextInput
           placeholder="비밀번호"
           placeholderTextColor={theme.muted}
+          value={password}
+          onChangeText={setPassword}
           secureTextEntry
           style={[styles.input, { borderColor: theme.border, color: theme.text }]}
         />
-        <Button title="로그인" onPress={enter} style={styles.mt} />
+        <Button title="로그인" onPress={withEmail} disabled={!canSubmit} loading={submitting} style={styles.mt} />
         <AppText variant="caption" color="tint" style={styles.center}>
           아이디 / 비밀번호 찾기
         </AppText>
@@ -45,7 +74,13 @@ export default function LoginScreen() {
 
       <View style={styles.list}>
         {socials.map((s) => (
-          <Button key={s.id} title={`${s.emoji}  ${s.label}`} variant="ghost" onPress={enter} />
+          <Button
+            key={s.id}
+            title={`${s.emoji}  ${s.label}`}
+            variant="ghost"
+            loading={submitting}
+            onPress={withSocial(s.id)}
+          />
         ))}
       </View>
     </Screen>

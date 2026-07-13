@@ -1,11 +1,15 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { AppText } from '@/components/text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
+import { api } from '@/api/client';
+import { useTheme } from '@/hooks/use-theme';
+import { useSession } from '@/store/session';
 
 const socials = [
   { id: 'google', label: 'Google로 계속하기', emoji: '🟦' },
@@ -15,7 +19,30 @@ const socials = [
 
 export default function SignupScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const { signIn } = useSession();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
   const next = () => router.replace('/onboarding/accent-select');
+
+  const withSocial = (provider: string) => async () => {
+    setSubmitting(true);
+    const { token } = await api.signup(`${provider}@example.com`, 'social-oauth-placeholder');
+    signIn(token);
+    next();
+  };
+
+  const withEmail = async () => {
+    setSubmitting(true);
+    const { token } = await api.signup(email, password, nickname || undefined);
+    signIn(token);
+    next();
+  };
+
+  const canSubmit = email.includes('@') && password.length >= 4;
 
   return (
     <Screen>
@@ -26,16 +53,49 @@ export default function SignupScreen() {
 
       <View style={styles.list}>
         {socials.map((s) => (
-          <Button key={s.id} title={`${s.emoji}  ${s.label}`} variant="ghost" onPress={next} />
+          <Button
+            key={s.id}
+            title={`${s.emoji}  ${s.label}`}
+            variant="ghost"
+            loading={submitting}
+            onPress={withSocial(s.id)}
+          />
         ))}
       </View>
 
       <Card>
         <AppText variant="label">자체 계정으로 가입</AppText>
-        <AppText variant="caption" color="textSecondary">
-          이메일 · 비밀번호 입력 폼이 이 자리에 들어갑니다 (스캐폴드).
-        </AppText>
-        <Button title="이메일로 가입하기" onPress={next} style={styles.mt} />
+        <TextInput
+          placeholder="이메일"
+          placeholderTextColor={theme.muted}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={[styles.input, { borderColor: theme.border, color: theme.text }]}
+        />
+        <TextInput
+          placeholder="비밀번호 (4자 이상)"
+          placeholderTextColor={theme.muted}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={[styles.input, { borderColor: theme.border, color: theme.text }]}
+        />
+        <TextInput
+          placeholder="닉네임 (선택)"
+          placeholderTextColor={theme.muted}
+          value={nickname}
+          onChangeText={setNickname}
+          style={[styles.input, { borderColor: theme.border, color: theme.text }]}
+        />
+        <Button
+          title="이메일로 가입하기"
+          onPress={withEmail}
+          disabled={!canSubmit}
+          loading={submitting}
+          style={styles.mt}
+        />
       </Card>
     </Screen>
   );
@@ -43,5 +103,13 @@ export default function SignupScreen() {
 
 const styles = StyleSheet.create({
   list: { gap: Spacing.two },
+  input: {
+    borderWidth: 1,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three,
+    fontSize: 15,
+    marginTop: Spacing.two,
+  },
   mt: { marginTop: Spacing.two },
 });

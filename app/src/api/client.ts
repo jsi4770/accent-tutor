@@ -96,6 +96,10 @@ interface ServerLevelTestResult {
   recommendedAccent: AccentCode;
   summary: string;
 }
+interface ServerAuthResponse {
+  token: string;
+  user: { id: string; email: string; nickname: string };
+}
 
 export interface LevelTestAnswer {
   questionId: string;
@@ -142,6 +146,24 @@ function waveformFromScore(seed: string, score: number): number[] {
 const DEMO_UTTERANCE = "I'll go to the drugstore first, then get a beer.";
 
 export const api = {
+  async signup(email: string, password: string, nickname?: string): Promise<{ token: string }> {
+    if (USE_MOCKS) return delay({ token: 'mock-token' });
+    const res = await http<ServerAuthResponse>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, nickname }),
+    });
+    return { token: res.token };
+  },
+
+  async login(email: string, password: string): Promise<{ token: string }> {
+    if (USE_MOCKS) return delay({ token: 'mock-token' });
+    const res = await http<ServerAuthResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    return { token: res.token };
+  },
+
   async getCurrentUser(): Promise<User> {
     if (USE_MOCKS) return delay(mockUser);
     const [profile, history] = await Promise.all([

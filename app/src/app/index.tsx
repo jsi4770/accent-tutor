@@ -1,5 +1,8 @@
 import { Redirect } from 'expo-router';
 
+import { useSession } from '@/store/session';
+
 export default function Index() {
-  return <Redirect href="/(auth)/start" />;
+  const { token } = useSession();
+  return <Redirect href={token ? '/(tabs)/home' : '/(auth)/start'} />;
 }

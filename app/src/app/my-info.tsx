@@ -13,7 +13,7 @@ import { Accents } from '@/constants/theme';
 export default function MyInfoScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { accent } = useSession();
+  const { accent, signOut } = useSession();
   const [notify, setNotify] = useState(true);
 
   const rows: { label: string; value?: string; onPress?: () => void }[] = [
@@ -69,7 +69,12 @@ export default function MyInfoScreen() {
         ))}
       </Card>
 
-      <Pressable style={styles.logout} onPress={() => router.replace('/(auth)/start')}>
+      <Pressable
+        style={styles.logout}
+        onPress={() => {
+          signOut();
+          router.replace('/(auth)/start');
+        }}>
         <AppText variant="label" color="danger">
           로그아웃
         </AppText>
