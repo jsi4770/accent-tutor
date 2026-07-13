@@ -7,6 +7,7 @@ import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { AppText } from '@/components/text';
 import { Radius, Spacing } from '@/constants/theme';
+import { api } from '@/api/client';
 import { LearningGoal } from '@/data/types';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -24,6 +25,13 @@ export default function GoalSettingScreen() {
   const theme = useTheme();
   const [goal, setGoal] = useState<LearningGoal>('study-abroad');
   const [minutes, setMinutes] = useState(20);
+  const [saving, setSaving] = useState(false);
+
+  const start = async () => {
+    setSaving(true);
+    await api.updateGoal(goal, minutes);
+    router.replace('/(tabs)/home');
+  };
 
   return (
     <Screen>
@@ -66,7 +74,7 @@ export default function GoalSettingScreen() {
         })}
       </View>
 
-      <Button title="학습 시작하기" onPress={() => router.replace('/(tabs)/home')} />
+      <Button title="학습 시작하기" onPress={start} loading={saving} />
     </Screen>
   );
 }

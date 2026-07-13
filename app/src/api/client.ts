@@ -90,9 +90,28 @@ interface ServerReport {
   prosodyScore: number;
   nextChallenge: string;
 }
+interface ServerLevelTestResult {
+  level: string;
+  score: number;
+  recommendedAccent: AccentCode;
+  summary: string;
+}
+
+export interface LevelTestAnswer {
+  questionId: string;
+  type: 'listening' | 'speaking';
+  response: string;
+}
 
 const goalFromServer: Record<ServerProfile['goal'], User['goal']> = {
   study: 'study-abroad',
+  job: 'job',
+  travel: 'travel',
+  daily: 'daily',
+};
+
+const goalToServer: Record<User['goal'], ServerProfile['goal']> = {
+  'study-abroad': 'study',
   job: 'job',
   travel: 'travel',
   daily: 'daily',
@@ -238,5 +257,36 @@ export const api = {
       accentProsody: r.prosodyScore,
       nextChallenge: r.nextChallenge,
     };
+  },
+
+  async updateAccent(accent: AccentCode): Promise<void> {
+    if (USE_MOCKS) return delay(undefined);
+    await http('/users/me/accent', { method: 'PUT', body: JSON.stringify({ accent }) });
+  },
+
+  async submitLevelTest(input: { answers?: LevelTestAnswer[]; skipped?: boolean }): Promise<ServerLevelTestResult> {
+    if (USE_MOCKS) {
+      return delay({
+        level: 'Intermediate (B1)',
+        score: 65,
+        recommendedAccent: 'en-UK',
+        summary: '스캐폴드 mock 결과입니다.',
+      });
+    }
+    const result = await http<ServerLevelTestResult>('/level-test/submit', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+    // Persist the estimated level onto the profile so home/profile/mypage reflect it.
+    await http('/users/me/profile', { method: 'PUT', body: JSON.stringify({ level: result.level }) });
+    return result;
+  },
+
+  async updateGoal(goal: User['goal'], dailyMinutes: number): Promise<void> {
+    if (USE_MOCKS) return delay(undefined);
+    await http('/users/me/goal', {
+      method: 'PUT',
+      body: JSON.stringify({ goal: goalToServer[goal], dailyMinutes }),
+    });
   },
 };

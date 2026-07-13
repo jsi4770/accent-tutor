@@ -7,6 +7,7 @@ import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { AppText } from '@/components/text';
 import { AccentCode, AccentOrder, Accents, Radius, Spacing } from '@/constants/theme';
+import { api } from '@/api/client';
 import { useTheme } from '@/hooks/use-theme';
 import { useSession } from '@/store/session';
 
@@ -15,9 +16,13 @@ export default function AccentSelectScreen() {
   const theme = useTheme();
   const { accent, setAccent } = useSession();
   const [selected, setSelected] = useState<AccentCode>(accent);
+  const [saving, setSaving] = useState(false);
 
-  const confirm = () => {
+  const confirm = async () => {
+    setSaving(true);
     setAccent(selected);
+    await api.updateAccent(selected);
+    setSaving(false);
     router.push('/onboarding/level-test');
   };
 
@@ -58,7 +63,7 @@ export default function AccentSelectScreen() {
         })}
       </View>
 
-      <Button title="다음" onPress={confirm} />
+      <Button title="다음" onPress={confirm} loading={saving} />
     </Screen>
   );
 }

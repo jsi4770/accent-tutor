@@ -8,6 +8,7 @@ import { ProgressBar } from '@/components/progress-bar';
 import { Screen } from '@/components/screen';
 import { AppText } from '@/components/text';
 import { Radius, Spacing } from '@/constants/theme';
+import { api, LevelTestAnswer } from '@/api/client';
 import { useTheme } from '@/hooks/use-theme';
 
 const questions = [
@@ -25,18 +26,35 @@ const questions = [
   },
 ];
 
+const answerType: Record<(typeof questions)[number]['kind'], LevelTestAnswer['type']> = {
+  listen: 'listening',
+  speak: 'speaking',
+};
+
 export default function LevelTestScreen() {
   const router = useRouter();
   const theme = useTheme();
   const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<LevelTestAnswer[]>([]);
+  const [submitting, setSubmitting] = useState(false);
   const q = questions[step];
   const progress = ((step + 1) / questions.length) * 100;
 
-  const next = () => {
+  const finish = async (finalAnswers: LevelTestAnswer[], skipped: boolean) => {
+    setSubmitting(true);
+    await api.submitLevelTest({ answers: finalAnswers, skipped });
+    router.push('/onboarding/goal-setting');
+  };
+
+  const next = (response: string) => {
+    if (submitting) return;
+    const answer: LevelTestAnswer = { questionId: q.id, type: answerType[q.kind], response };
+    const updated = [...answers, answer];
+    setAnswers(updated);
     if (step < questions.length - 1) {
       setStep(step + 1);
     } else {
-      router.push('/onboarding/goal-setting');
+      finish(updated, false);
     }
   };
 
@@ -56,7 +74,7 @@ export default function LevelTestScreen() {
           <Button title="🔊 듣기 재생" variant="secondary" onPress={() => {}} />
           <View style={styles.list}>
             {q.options.map((opt, i) => (
-              <Card key={i} onPress={next}>
+              <Card key={i} onPress={() => next(opt)}>
                 <AppText variant="body">{opt}</AppText>
               </Card>
             ))}
@@ -65,7 +83,7 @@ export default function LevelTestScreen() {
       ) : (
         <View style={styles.speakArea}>
           <Pressable
-            onPress={next}
+            onPress={() => next('(recorded audio placeholder)')}
             style={[styles.mic, { backgroundColor: theme.tint }]}>
             <AppText style={styles.micIcon}>🎙️</AppText>
           </Pressable>
@@ -75,7 +93,12 @@ export default function LevelTestScreen() {
         </View>
       )}
 
-      <Button title="테스트 스킵" variant="ghost" onPress={() => router.push('/onboarding/goal-setting')} />
+      <Button
+        title="테스트 스킵"
+        variant="ghost"
+        loading={submitting}
+        onPress={() => finish(answers, true)}
+      />
     </Screen>
   );
 }
