@@ -139,6 +139,39 @@ export const expressionMappings: Record<
   ],
 };
 
+export const reportsByAccent: Record<
+  Accent,
+  { city: string; storyHeadline: string; accentSyncRate: number; cumulativeGaugePercent: number; standardAccuracy: number; prosodyScore: number; nextChallenge: string }
+> = {
+  "en-UK": {
+    city: "London",
+    storyHeadline: "{nickname} 님은 지금 '런던 출근 3일 차', 영국인 싱크로율 58%",
+    accentSyncRate: 58,
+    cumulativeGaugePercent: 62,
+    standardAccuracy: 81,
+    prosodyScore: 58,
+    nextChallenge: "기본기 다지며 다시 도전하기 (런던 튜브 타기 상황극)",
+  },
+  "en-AU": {
+    city: "Sydney",
+    storyHeadline: "{nickname} 님은 지금 '시드니 정착 1주 차', 호주인 싱크로율 46%",
+    accentSyncRate: 46,
+    cumulativeGaugePercent: 50,
+    standardAccuracy: 80,
+    prosodyScore: 46,
+    nextChallenge: "시드니 카페 브런치 주문 상황극에 도전하기",
+  },
+  "en-US": {
+    city: "New York",
+    storyHeadline: "{nickname} 님은 지금 '뉴욕 적응 중', 미국인 싱크로율 71%",
+    accentSyncRate: 71,
+    cumulativeGaugePercent: 74,
+    standardAccuracy: 85,
+    prosodyScore: 71,
+    nextChallenge: "뉴욕 인터뷰 스몰토크 상황극에 도전하기",
+  },
+};
+
 export const progressHistory: ProgressHistoryItem[] = [
   { date: "2026-07-12", type: "pronunciation", title: "런던 튜브 타기", minutes: 12, score: 61 },
   { date: "2026-07-12", type: "expression", title: "펍 표현 세트", minutes: 8, score: 74 },

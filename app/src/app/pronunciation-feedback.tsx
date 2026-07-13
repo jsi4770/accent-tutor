@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -10,6 +10,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { api } from '@/api/client';
 import { PronunciationFeedback } from '@/data/types';
 import { useTheme } from '@/hooks/use-theme';
+import { useSession } from '@/store/session';
 
 function Waveform({ data, color }: { data: number[]; color: string }) {
   return (
@@ -24,11 +25,13 @@ function Waveform({ data, color }: { data: number[]; color: string }) {
 export default function PronunciationFeedbackScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const { accent } = useSession();
+  const { cardId } = useLocalSearchParams<{ cardId?: string }>();
   const [fb, setFb] = useState<PronunciationFeedback | null>(null);
 
   useEffect(() => {
-    api.submitUtterance('c_pub', 'mock://audio').then(setFb);
-  }, []);
+    api.submitUtterance(cardId ?? 'c_pub', accent).then(setFb);
+  }, [cardId, accent]);
 
   if (!fb) {
     return (

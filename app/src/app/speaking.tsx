@@ -10,18 +10,20 @@ import { Radius, Spacing } from '@/constants/theme';
 import { api } from '@/api/client';
 import { ChatTurn } from '@/data/types';
 import { useTheme } from '@/hooks/use-theme';
+import { useSession } from '@/store/session';
 
 export default function SpeakingScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const { accent } = useSession();
   const { cardId } = useLocalSearchParams<{ cardId?: string }>();
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [recording, setRecording] = useState(false);
   const wave = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    api.getSpeakingSession(cardId ?? 'c_pub').then(setTurns);
-  }, [cardId]);
+    api.getSpeakingSession(cardId ?? 'c_pub', accent).then(setTurns);
+  }, [cardId, accent]);
 
   useEffect(() => {
     if (recording) {
@@ -40,7 +42,7 @@ export default function SpeakingScreen() {
   const toggleMic = () => {
     if (recording) {
       setRecording(false);
-      router.push('/pronunciation-feedback');
+      router.push({ pathname: '/pronunciation-feedback', params: { cardId: cardId ?? 'c_pub' } });
     } else {
       setRecording(true);
     }

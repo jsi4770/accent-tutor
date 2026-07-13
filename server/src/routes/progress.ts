@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { getUser } from "../data/store";
-import { progressHistory } from "../data/mockData";
-import type { ProgressReport } from "../types";
+import { progressHistory, reportsByAccent } from "../data/mockData";
+import { ACCENTS } from "../types";
+import type { Accent, ProgressReport } from "../types";
 
 const router = Router();
 
@@ -15,18 +16,24 @@ router.get("/history", (req, res) => {
   });
 });
 
-router.get("/report", (_req, res) => {
+router.get("/report", (req, res) => {
   const user = getUser();
+  const accent = (req.query.accent as Accent) ?? user.accent;
+  if (!ACCENTS.includes(accent)) {
+    res.status(400).json({ error: `Invalid accent. Expected one of ${ACCENTS.join(", ")}` });
+    return;
+  }
+  const base = reportsByAccent[accent];
   const report: ProgressReport = {
-    storyHeadline: `${user.nickname} 님은 지금 '런던 출근 3일 차', 영국인 싱크로율 58%`,
-    city: "London",
-    accentSyncRate: 58,
-    cumulativeGaugePercent: 62,
-    standardAccuracy: 81,
-    prosodyScore: 58,
+    storyHeadline: base.storyHeadline.replace("{nickname}", user.nickname),
+    city: base.city,
+    accentSyncRate: base.accentSyncRate,
+    cumulativeGaugePercent: base.cumulativeGaugePercent,
+    standardAccuracy: base.standardAccuracy,
+    prosodyScore: base.prosodyScore,
     streakDays: 3,
     totalMinutes: progressHistory.reduce((a, i) => a + i.minutes, 0),
-    nextChallenge: "기본기 다지며 다시 도전하기 (런던 튜브 타기 상황극)",
+    nextChallenge: base.nextChallenge,
   };
   res.json(report);
 });
