@@ -32,7 +32,7 @@ npm install
 npx expo start        # i / a / w 로 iOS·Android·웹 실행
 ```
 
-앱의 API 클라이언트(`app/src/api/client.ts`)는 기본적으로 `USE_MOCKS = true`로 목데이터를 반환한다. 백엔드를 띄운 뒤 `USE_MOCKS`를 끄고 base URL(`http://localhost:4000`)로 실제 fetch를 붙이면 된다.
+앱의 API 클라이언트(`app/src/api/client.ts`)는 기본적으로 `USE_MOCKS = false`로 실제 백엔드(`http://localhost:4000`)를 호출한다. 백엔드 없이 UI만 개발할 때는 `USE_MOCKS`를 `true`로 바꾸면 기존 목데이터 경로로 되돌아간다.
 
 ## 현재 범위: 무엇이 진짜고 무엇이 목(mock)인가
 
@@ -50,4 +50,3 @@ npx expo start        # i / a / w 로 iOS·Android·웹 실행
 - 실제 인터뷰로 PRD 검증 → PRD.md v2 갱신
 - `docs/SCREENS.md`의 "결정 필요 사항"(복습 화면 탭 구조 등) 확정
 - 각 AI 기능의 실제 provider 구현 (음성 인식/운율 분석 API, LLM 기반 표현 추천)
-- 앱 ↔ 서버 실제 연동 (mock 해제)
