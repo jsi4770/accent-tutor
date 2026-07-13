@@ -8,14 +8,9 @@ import { Screen } from '@/components/screen';
 import { AppText } from '@/components/text';
 import { Radius, Spacing } from '@/constants/theme';
 import { api } from '@/api/client';
+import { useGoogleAuth } from '@/hooks/use-google-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { useSession } from '@/store/session';
-
-const socials = [
-  { id: 'google', label: 'Google로 계속하기', emoji: '🟦' },
-  { id: 'naver', label: '네이버로 계속하기', emoji: '🟩' },
-  { id: 'kakao', label: '카카오로 계속하기', emoji: '🟨' },
-];
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -28,12 +23,10 @@ export default function SignupScreen() {
 
   const next = () => router.replace('/onboarding/accent-select');
 
-  const withSocial = (provider: string) => async () => {
-    setSubmitting(true);
-    const { token } = await api.signup(`${provider}@example.com`, 'social-oauth-placeholder');
+  const { promptAsync: googlePromptAsync, ready: googleReady } = useGoogleAuth((token) => {
     signIn(token);
     next();
-  };
+  });
 
   const withEmail = async () => {
     setSubmitting(true);
@@ -52,15 +45,13 @@ export default function SignupScreen() {
       </AppText>
 
       <View style={styles.list}>
-        {socials.map((s) => (
-          <Button
-            key={s.id}
-            title={`${s.emoji}  ${s.label}`}
-            variant="ghost"
-            loading={submitting}
-            onPress={withSocial(s.id)}
-          />
-        ))}
+        <Button
+          title="🟦  Google로 계속하기"
+          variant="ghost"
+          loading={submitting}
+          disabled={!googleReady}
+          onPress={() => googlePromptAsync()}
+        />
       </View>
 
       <Card>

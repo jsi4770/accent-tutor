@@ -8,14 +8,9 @@ import { Screen } from '@/components/screen';
 import { AppText } from '@/components/text';
 import { Radius, Spacing } from '@/constants/theme';
 import { api } from '@/api/client';
+import { useGoogleAuth } from '@/hooks/use-google-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { useSession } from '@/store/session';
-
-const socials = [
-  { id: 'google', label: 'Google 로그인', emoji: '🟦' },
-  { id: 'naver', label: '네이버 로그인', emoji: '🟩' },
-  { id: 'kakao', label: '카카오 로그인', emoji: '🟨' },
-];
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -27,16 +22,14 @@ export default function LoginScreen() {
 
   const enter = () => router.replace('/(tabs)/home');
 
+  const { promptAsync: googlePromptAsync, ready: googleReady } = useGoogleAuth((token) => {
+    signIn(token);
+    enter();
+  });
+
   const withEmail = async () => {
     setSubmitting(true);
     const { token } = await api.login(email, password);
-    signIn(token);
-    enter();
-  };
-
-  const withSocial = (provider: string) => async () => {
-    setSubmitting(true);
-    const { token } = await api.login(`${provider}@example.com`, 'social-oauth-placeholder');
     signIn(token);
     enter();
   };
@@ -73,15 +66,13 @@ export default function LoginScreen() {
       </Card>
 
       <View style={styles.list}>
-        {socials.map((s) => (
-          <Button
-            key={s.id}
-            title={`${s.emoji}  ${s.label}`}
-            variant="ghost"
-            loading={submitting}
-            onPress={withSocial(s.id)}
-          />
-        ))}
+        <Button
+          title="🟦  Google 로그인"
+          variant="ghost"
+          loading={submitting}
+          disabled={!googleReady}
+          onPress={() => googlePromptAsync()}
+        />
       </View>
     </Screen>
   );

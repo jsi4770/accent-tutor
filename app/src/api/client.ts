@@ -164,6 +164,15 @@ export const api = {
     return { token: res.token };
   },
 
+  async loginWithGoogle(code: string, codeVerifier: string, redirectUri: string): Promise<{ token: string }> {
+    if (USE_MOCKS) return delay({ token: 'mock-token' });
+    const res = await http<ServerAuthResponse>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ code, codeVerifier, redirectUri }),
+    });
+    return { token: res.token };
+  },
+
   async getCurrentUser(): Promise<User> {
     if (USE_MOCKS) return delay(mockUser);
     const [profile, history] = await Promise.all([

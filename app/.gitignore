@@ -34,6 +34,7 @@ yarn-error.*
 .omc/
 
 # local env files
+.env
 .env*.local
 
 # typescript
