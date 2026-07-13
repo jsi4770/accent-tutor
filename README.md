@@ -2,6 +2,8 @@
 
 AI 기반 다중 악센트(en-UK / en-AU / en-US) 영어 스피킹 튜터링 앱. 10주 학생 프로젝트 스캐폴드.
 
+저장소: https://github.com/jsi4770/accent-tutor
+
 ## 문서
 
 - [`docs/PRD.md`](docs/PRD.md) — 제품 요구사항 (한 단락 PRD + 6질문 워크시트, 필요 데이터/제약사항)
